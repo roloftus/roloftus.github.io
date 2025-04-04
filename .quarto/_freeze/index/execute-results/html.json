@@ -1,0 +1,15 @@
+{
+  "hash": "c8835e4d4b63bb476fb8b0c0d6b107cc",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Rob Loftus\"\nimage: DSC04316copy.jpg \nabout:\n  template: jolla\n  links: \n    - icon: envelope\n      href: mailto:roloftus@ucsd.edu\n    - icon: linkedin\n      href: https://www.linkedin.com/in/robertwloftus/\n---\n\n\n\n\nHere is a paragraph about me.\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] 2\n```\n\n\n:::\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

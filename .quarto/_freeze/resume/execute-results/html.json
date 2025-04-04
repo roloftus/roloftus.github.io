@@ -1,0 +1,15 @@
+{
+  "hash": "694549368bed722748c59da42cf08e0f",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Resume\"\n---\n\n\n\n\n\n{{< pdf Resume/MGT495LoftusResume.pdf\nwidth=100% height=800 >}}\n\n\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] 2\n```\n\n\n:::\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
