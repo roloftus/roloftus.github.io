@@ -1,0 +1,195 @@
+---
+pagetitle: Notebook report
+output:
+  html_notebook:
+    highlight: zenburn
+    theme: cosmo
+    toc: yes
+    code_folding: hide
+---
+
+```{r r_setup, include = FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+
+## make all required libraries available by loading radiant package if needed
+if (is.null(shiny::getDefaultReactiveDomain())) library(radiant)
+
+## include code to load the data you require
+## for interactive use attach the r_data environment
+# attach(r_data)
+```
+
+<style>
+.btn, .form-control, pre, code, pre code {
+  border-radius: 4px;
+}
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+code, pre, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+}
+code {
+  color: #c7254e;
+  background-color: #f9f2f4;
+}
+pre {
+  background-color: #ffffff;
+}
+</style>
+
+
+
+## Marketing Analytics HW#1
+
+#### Question #1 - T-Test - "dormant" 
+
+
+```{r fig.width = 7, fig.height = 4.31, dpi = 96}
+result <- compare_means(
+  r_data[["karlan_list_2007_rl"]],
+  var1 = "treatment_factor", 
+  var2 = "dormant"
+)
+summary(result, show = TRUE)
+```
+
+#### Question #1 - Linear Regression - "dormant"
+
+
+
+```{r fig.width = 7, fig.height = 2.69, dpi = 96}
+result <- regress(
+  r_data[["karlan_list_2007_rl"]], 
+  rvar = "dormant", 
+  evar = "treatment_factor"
+)
+summary(result)
+```
+
+
+#### Question #1 - T-Test - "pblack"
+
+```{r fig.width = 7, fig.height = 4.31, dpi = 96}
+result <- compare_means(
+  r_data[["karlan_list_2007_rl"]], 
+  var1 = "treatment_factor", 
+  var2 = "pblack"
+)
+summary(result, show = TRUE)
+```
+
+#### Question #1 - Linear Regression - "pblack"
+
+```{r fig.width = 7, fig.height = 2.69, dpi = 96}
+result <- regress(
+  r_data[["karlan_list_2007_rl"]], 
+  rvar = "pblack", 
+  evar = "treatment_factor"
+)
+summary(result)
+```
+
+
+
+#### Question #1 - T-Test - "median_hhincome"
+
+
+```{r fig.width = 7, fig.height = 4.31, dpi = 96}
+result <- compare_means(
+  r_data[["karlan_list_2007_rl"]], 
+  var1 = "treatment_factor", 
+  var2 = "median_hhincome"
+)
+summary(result, show = TRUE)
+```
+
+#### Question #1 - Linear Regression - "median_hhincome"
+```{r fig.width = 7, fig.height = 2.69, dpi = 96}
+result <- regress(
+  r_data[["karlan_list_2007_rl"]], 
+  rvar = "median_hhincome", 
+  evar = "treatment_factor"
+)
+summary(result)
+```
+
+#### Question #2 - Proportion of People Who Donated by Treatment vs Control Group
+
+
+```{r fig.width = 7, fig.height = 7, dpi = 96}
+visualize(
+  r_data[["karlan_list_2007_rl"]], 
+  xvar = "treatment_factor", 
+  yvar = "gave", 
+  type = "bar", 
+  axes = "flip", 
+  labs = list(
+    title = "Proportion of People Who Donated by Treatment vs Control Group", 
+    x = "Treatment Group", 
+    y = "% Who Donated"
+  ), 
+  custom = FALSE
+)
+```
+#### Question #2 - T-Test - Gave by Treatment vs Control Group
+
+
+```{r fig.width = 7, fig.height = 4.31, dpi = 96}
+result <- compare_means(
+  r_data[["karlan_list_2007_rl"]], 
+  var1 = "treatment_factor", 
+  var2 = "gave"
+)
+summary(result, show = TRUE)
+plot(result, plots = "bar", custom = FALSE)
+
+```
+
+#### Question #2 - Regression - Gave by Treatment vs Control Group
+
+
+
+
+```{r fig.width = 7, fig.height = 2.69, dpi = 96}
+result <- regress(
+  r_data[["karlan_list_2007_rl"]], 
+  rvar = "gave", 
+  evar = "treatment_factor"
+)
+summary(result)
+plot(result, plots = "pred_plot", incl = "treatment_factor", custom = FALSE)
+```
+
+```{r fig.width = 7, fig.height = 4.31, dpi = 96}
+result <- compare_means(
+  r_data[["treatment"]], 
+  var1 = "ratio_factor", 
+  var2 = "gave", 
+  comb = c("1:2", "1:3", "2:3")
+)
+summary(result, show = TRUE)
+```
