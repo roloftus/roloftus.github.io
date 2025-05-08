@@ -251,13 +251,6 @@ print(optim_output$par)
 
 Next, we extend our simple Poisson model to a Poisson Regression Model such that $Y_i = \text{Poisson}(\lambda_i)$ where $\lambda_i = \exp(X_i'\beta)$. The interpretation is that the success rate of patent awards is not constant across all firms ($\lambda$) but rather is a function of firm characteristics $X_i$. Specifically, we will use the covariates age, age squared, region, and whether the firm is a customer of Blueprinty.
 
-_todo: Update your likelihood or log-likelihood function with an additional argument to take in a covariate matrix X. Also change the parameter of the model from lambda to the beta vector. In this model, lambda must be a positive number, so we choose the inverse link function g_inv() to be exp() so that_ $\lambda_i = e^{X_i'\beta}$. _For example:_
-
-```
-poisson_regression_likelihood <- function(beta, Y, X){
-   ...
-}
-```
 
 ####  **Covariate Matrix X**
 
@@ -277,10 +270,9 @@ Y <- df$patents
 ```
 
 
+Next, we use this function to find the MLE vector and the Hessian of the Poisson model with covariates. With the Hessian, we calculate the standard erros of the beta paramenter estimates. This is shared below in a table of coefficients and standard errors.  
 
-_todo: Use your function along with R's optim() or Python's sp.optimize() to find the MLE vector and the Hessian of the Poisson model with covariates. Specifically, the first column of X should be all 1's to enable a constant term in the model, and the subsequent columns should be age, age squared, binary variables for all but one of the regions, and the binary customer variable. Use the Hessian to find standard errors of the beta parameter estimates and present a table of coefficients and standard errors._
-
-####  Optim Coefficients Estimate and Std Error
+####  **Optim Coefficients Estimate and Std Error**
 
 ```{r, message=FALSE, warning=FALSE}
 start_vals <- rep(0, ncol(X))
@@ -291,7 +283,7 @@ fit <- optim(par = start_vals,
              method = "BFGS")
 
 beta_hat <- fit$par
-se <- sqrt(diag(solve(fit$hessian)))  # inverse of Hessian = variance-covariance matrix
+se <- sqrt(diag(solve(fit$hessian)))  # inverse of Hessian
 
 results <- data.frame(
   Coefficient = round(beta_hat, 4),
@@ -302,19 +294,40 @@ results
 
 ```
 
+####  **Check glm**
 
-_todo: Check your results using R's glm() function or Python sm.GLM() function._
-
-####  Check glm
+We cross checked the results by  using the glm function.
 
 ```{r, message=FALSE, warning=FALSE}
 glm_fit <- glm(patents ~ age + I(age^2) + region + iscustomer,
                data = df, family = poisson)
-summary(glm_fit)
+summary(glm_fit)$coefficients
 ```
 
 
-_todo: Interpret the results._ 
+#### **MLE vs glm Estimates**
+
+As you can see in this side by side comparrison, the MLE and glm outputs are very close in values, confirming the Poisson MLE model.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+comparison_table <- data.frame(
+  MLE_Estimate = round(beta_hat, 4),
+  GLM_Estimate = round(coef(glm_fit), 4),
+  MLE_Std_Error = round(se, 4),
+  GLM_Std_Error = round(summary(glm_fit)$coefficients[, "Std. Error"], 4)
+)
+
+kable(comparison_table, caption = "Comparison of Custom MLE vs. glm() Results")
+```
+
+#### **Interpretation of Poisson Model**
+
+The analysis uses a Poisson regression model to determine whether Blueprinty's customers are associated with a higher number of patents awarded. The regression controls for firm age, age squared, regional differences, and customer status. Results indicate that the "iscustomer" variable has a positive and statistically significant coefficient. This can be interpreted to "on average, Blueprinty customers are more successful in obtaining patents than non-customers. 
+
+#### **Impact of Blueprinty's Software on Patent Success**
+
+To estimate the practical effect of Blueprinty’s software on patent success, we created two fake datasets: one where all firms are treated as non-customers (X_0), and another where all firms are treated as customers (X_1). Using the fitted Poisson model, we predicted the expected number of patents for each firm under both scenarios. The average difference in predicted patent was 0.218 patents per firm. This suggests that firms that use Blueprinty’s software are expected to receive approximately 0.22 more patents on average over five years compared to similar firms that do not use the software.
 
 ```{r, message=FALSE, warning=FALSE}
 X_0 <- X; X_0[, "iscustomer"] <- 0
@@ -327,7 +340,6 @@ marginal_effect <- mean(lambda_1 - lambda_0)
 marginal_effect
 ```
 
-_todo: What do you conclude about the effect of Blueprinty's software on patent success? Because the beta coefficients are not directly interpretable, it may help to create two fake datasets: X_0 and X_1 where X_0 is the X data but with iscustomer=0 for every observation and X_1 is the X data but with iscustomer=1 for every observation. Then, use X_0 and your fitted model to get the vector of predicted number of patents (y_pred_0) for every firm in the dataset, and use X_1 to get Y_pred_1 for every firm. Then subtract y_pred_1 minus y_pred_0 and take the average of that vector of differences._
 
 
 
@@ -358,26 +370,61 @@ AirBnB is a popular platform for booking short-term rentals. In March 2017, stud
 ::::
 
 
-_todo: Assume the number of reviews is a good proxy for the number of bookings. Perform some exploratory data analysis to get a feel for the data, handle or drop observations with missing values on relevant variables, build one or more models (e.g., a poisson regression model for the number of bookings as proxied by the number of reviews), and interpret model coefficients to describe variation in the number of reviews as a function of the variables provided._
-
 ```{r, message=FALSE, warning=FALSE}
-dfa <- read.csv("airbnb.csv")
-dfa_clean <- na.omit(dfa[, c("number_of_reviews", "days", "bathrooms", "bedrooms", "price",
-                             "review_scores_cleanliness", "review_scores_location",
-                             "review_scores_value", "room_type", "instant_bookable")])
-dfa_clean$room_type <- as.factor(dfa_clean$room_type)
-dfa_clean$instant_bookable <- as.factor(dfa_clean$instant_bookable)
+
+# Libraries
+library(dplyr)
+library(tidyr)
+library(readr)
+
+# Load data
+dfa <- read_csv("airbnb.csv")
+
+# Clean and prepare data
+dfa_clean <- dfa %>%
+  select(number_of_reviews, days, bathrooms, bedrooms, price,
+         review_scores_cleanliness, review_scores_location,
+         review_scores_value, room_type, instant_bookable) %>%
+  na.omit() %>%
+  mutate(across(c(room_type, instant_bookable), as.factor))
+
+# Make Summary - Numeric
+numeric_summary <- dfa_clean %>%
+  summarise(
+    across(
+      c(number_of_reviews, days, bathrooms, bedrooms, price,
+        review_scores_cleanliness, review_scores_location, review_scores_value),
+      list(Mean = ~mean(.), SD = ~sd(.), N = ~sum(!is.na(.))),
+      .names = "{.col}_{.fn}"
+    )
+  ) %>%
+  pivot_longer(cols = everything(),
+               names_to = c("Variable", "Statistic"),
+               names_pattern = "(.*)_(Mean|SD|N)",
+               values_to = "Value") %>%
+  pivot_wider(names_from = Statistic, values_from = Value) %>%
+  arrange(Variable)
+print(numeric_summary)
+
+# Make Summary - Categorical
+room_type_summary <- dfa_clean %>%
+  count(room_type, name = "Count")
+
+instant_bookable_summary <- dfa_clean %>%
+  count(instant_bookable, name = "Count")
+print(room_type_summary)
+print(instant_bookable_summary)
 ```
 
+
 ```{r, message=FALSE, warning=FALSE}
-summary(dfa_clean)
 hist(dfa_clean$number_of_reviews, breaks=50, main="Distribution of Number of Reviews",
-     xlab="Number of Reviews", col="purple")
+     xlab="Number of Reviews", col="steelblue")
 boxplot(number_of_reviews ~ room_type, data=dfa_clean,
         main="Number of Reviews by Room Type", ylab="Number of Reviews")
 plot(log(dfa_clean$price), dfa_clean$number_of_reviews,
      main="Number of Reviews vs Log Price", xlab="Log(Price)", ylab="Number of Reviews",
-     col="gold", pch=20)
+     col="darkorange", pch=20)
 ```
 
 ```{r, message=FALSE, warning=FALSE}
