@@ -16,5 +16,20 @@
   },
   "blog.qmd": {
     "blog.html": "a1df5f6b"
+  },
+  "blog/project1/hw1_questions.qmd": {
+    "hw1_questions.html": "a39ecd09"
+  },
+  "report-216f5f9710a0.Rmd": {
+    "report-216f5f9710a0.html": "3652f8ab"
+  },
+  "marketing_analytics_radiant_hw1.Rmd": {
+    "marketing_analytics_radiant_hw1.html": "24c768dc"
+  },
+  "marketing_analytics_radiant_hw1a.Rmd": {
+    "marketing_analytics_radiant_hw1a.html": "a7fe0041"
+  },
+  "blog/project2/hw2_questions.qmd": {
+    "hw2_questions.html": "2eac5cd1"
   }
 }
