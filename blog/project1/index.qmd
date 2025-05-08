@@ -1,10 +1,10 @@
 ---
-title: "Project 1"
+title: "Project 2"
 format: html
 ---
 
 
-# This is Project 1
+# This is Project 2
 
 ## Section 1: Data
 
@@ -23,5 +23,6 @@ mtcars|>
     ggplot(aes(x = wt, y = mpg)) + 
     geom_point()
 ```
+
 
 
