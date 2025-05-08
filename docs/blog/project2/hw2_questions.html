@@ -154,7 +154,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../index.qmd"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item">
@@ -720,9 +720,10 @@ Variable Definitions
 2 TRUE              5917</code></pre>
 </div>
 </div>
+<section id="distribution-of-variables" class="level4">
+<h4 class="anchored" data-anchor-id="distribution-of-variables"><strong>Distribution of Variables</strong></h4>
+<p>First, we reviewed the distribution of values for each of the different variables. Number of Reviews and Price were difficult to analyze because they were clumped together and spread wide, so we also evaluated these variables in log form, which helped normalize the data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dfa_clean<span class="sc">$</span>number_of_reviews, <span class="at">breaks=</span><span class="dv">50</span>, <span class="at">main=</span><span class="st">"Distribution of Number of Reviews"</span>,</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab=</span><span class="st">"Number of Reviews"</span>, <span class="at">col=</span><span class="st">"steelblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -730,67 +731,76 @@ Variable Definitions
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(number_of_reviews <span class="sc">~</span> room_type, <span class="at">data=</span>dfa_clean,</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">main=</span><span class="st">"Number of Reviews by Room Type"</span>, <span class="at">ylab=</span><span class="st">"Number of Reviews"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="hw2_questions_files/figure-html/unnamed-chunk-16-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
 </div>
-</div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">log</span>(dfa_clean<span class="sc">$</span>price), dfa_clean<span class="sc">$</span>number_of_reviews,</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">main=</span><span class="st">"Number of Reviews vs Log Price"</span>, <span class="at">xlab=</span><span class="st">"Log(Price)"</span>, <span class="at">ylab=</span><span class="st">"Number of Reviews"</span>,</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">col=</span><span class="st">"darkorange"</span>, <span class="at">pch=</span><span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="hw2_questions_files/figure-html/unnamed-chunk-16-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
+<p>To get a closer look at the distriubtion of “Number of Reviews,” we created a more blown up version to get a better feel for the data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>model_poisson <span class="ot">&lt;-</span> <span class="fu">glm</span>(number_of_reviews <span class="sc">~</span> days <span class="sc">+</span> bathrooms <span class="sc">+</span> bedrooms <span class="sc">+</span> price <span class="sc">+</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                     review_scores_cleanliness <span class="sc">+</span> review_scores_location <span class="sc">+</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                     review_scores_value <span class="sc">+</span> room_type <span class="sc">+</span> instant_bookable,</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>), <span class="at">data =</span> dfa_clean)</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_poisson)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In addition to getting a view of the distribution of values, we also wanted to get an idea of the connection between different variables. Here you will find a scatterplot matrix that examines bathrooms, bedrooms, log_price, and log_reviews.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The scatterplot in the matrix between log_price and log_reviews was not super clear, so we created a blown up version of this to make it easier to digest. It turned out that the data was much more insightful when just using the log for price and not for number of reviews. Here is this clearer view:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Additionally, we wanted to get a view into the correlation of the non-numerical reviews. Here you will see a chart that shows the relation between “Number of Reviews” and “Room Type.”</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="regression-results" class="level4">
+<h4 class="anchored" data-anchor-id="regression-results"><strong>Regression Results</strong></h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>model_poisson <span class="ot">&lt;-</span> <span class="fu">glm</span>(number_of_reviews <span class="sc">~</span> days <span class="sc">+</span> bathrooms <span class="sc">+</span> bedrooms <span class="sc">+</span> price <span class="sc">+</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                     review_scores_cleanliness <span class="sc">+</span> review_scores_location <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                     review_scores_value <span class="sc">+</span> room_type <span class="sc">+</span> instant_bookable,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>), <span class="at">data =</span> dfa_clean)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_poisson)<span class="sc">$</span>coefficients</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-glm(formula = number_of_reviews ~ days + bathrooms + bedrooms + 
-    price + review_scores_cleanliness + review_scores_location + 
-    review_scores_value + room_type + instant_bookable, family = poisson(link = "log"), 
-    data = dfa_clean)
-
-Coefficients:
-                            Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)                3.498e+00  1.609e-02 217.396  &lt; 2e-16 ***
-days                       5.072e-05  3.909e-07 129.757  &lt; 2e-16 ***
-bathrooms                 -1.177e-01  3.749e-03 -31.394  &lt; 2e-16 ***
-bedrooms                   7.409e-02  1.992e-03  37.197  &lt; 2e-16 ***
-price                     -1.791e-05  8.327e-06  -2.151 0.031485 *  
-review_scores_cleanliness  1.131e-01  1.496e-03  75.611  &lt; 2e-16 ***
-review_scores_location    -7.690e-02  1.609e-03 -47.796  &lt; 2e-16 ***
-review_scores_value       -9.108e-02  1.804e-03 -50.490  &lt; 2e-16 ***
-room_typePrivate room     -1.054e-02  2.738e-03  -3.847 0.000119 ***
-room_typeShared room      -2.463e-01  8.620e-03 -28.578  &lt; 2e-16 ***
-instant_bookableTRUE       3.459e-01  2.890e-03 119.666  &lt; 2e-16 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for poisson family taken to be 1)
-
-    Null deviance: 961626  on 30159  degrees of freedom
-Residual deviance: 926886  on 30149  degrees of freedom
-AIC: 1048375
-
-Number of Fisher Scoring iterations: 9</code></pre>
+<pre><code>                               Estimate   Std. Error    z value      Pr(&gt;|z|)
+(Intercept)                3.498049e+00 1.609065e-02 217.396341  0.000000e+00
+days                       5.072419e-05 3.909177e-07 129.756725  0.000000e+00
+bathrooms                 -1.177039e-01 3.749225e-03 -31.394206 2.427541e-216
+bedrooms                   7.408728e-02 1.991742e-03  37.197224 7.567102e-303
+price                     -1.790926e-05 8.326458e-06  -2.150886  3.148517e-02
+review_scores_cleanliness  1.131388e-01 1.496336e-03  75.610555  0.000000e+00
+review_scores_location    -7.689939e-02 1.608903e-03 -47.796155  0.000000e+00
+review_scores_value       -9.107646e-02 1.803855e-03 -50.489906  0.000000e+00
+room_typePrivate room     -1.053609e-02 2.738448e-03  -3.847468  1.193450e-04
+room_typeShared room      -2.463369e-01 8.619791e-03 -28.578058 1.259095e-179
+instant_bookableTRUE       3.458502e-01 2.890138e-03 119.665635  0.000000e+00</code></pre>
 </div>
 </div>
+</section>
+<section id="coefficients" class="level4">
+<h4 class="anchored" data-anchor-id="coefficients"><strong>Coefficients</strong></h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(model_poisson))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(model_poisson))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              (Intercept)                      days                 bathrooms 
                33.0509226                 1.0000507                 0.8889592 
@@ -802,60 +812,25 @@ Number of Fisher Scoring iterations: 9</code></pre>
                 0.7816588                 1.4131909 </code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>dispersion <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">residuals</span>(model_poisson, <span class="at">type =</span> <span class="st">"pearson"</span>)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> model_poisson<span class="sc">$</span>df.residual</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(dispersion)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 45.54979</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (dispersion <span class="sc">&gt;</span> <span class="fl">1.5</span>) {</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(MASS)</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  model_nb <span class="ot">&lt;-</span> <span class="fu">glm.nb</span>(number_of_reviews <span class="sc">~</span> days <span class="sc">+</span> bathrooms <span class="sc">+</span> bedrooms <span class="sc">+</span> price <span class="sc">+</span></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                     review_scores_cleanliness <span class="sc">+</span> review_scores_location <span class="sc">+</span></span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                     review_scores_value <span class="sc">+</span> room_type <span class="sc">+</span> instant_bookable,</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> dfa_clean)</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>(model_nb)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-glm.nb(formula = number_of_reviews ~ days + bathrooms + bedrooms + 
-    price + review_scores_cleanliness + review_scores_location + 
-    review_scores_value + room_type + instant_bookable, data = dfa_clean, 
-    init.theta = 0.7379657958, link = log)
-
-Coefficients:
-                            Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)                3.220e+00  9.255e-02  34.789  &lt; 2e-16 ***
-days                       4.784e-04  5.401e-06  88.575  &lt; 2e-16 ***
-bathrooms                 -8.268e-02  1.984e-02  -4.168 3.08e-05 ***
-bedrooms                   7.333e-02  1.110e-02   6.604 4.01e-11 ***
-price                     -3.725e-05  4.049e-05  -0.920  0.35760    
-review_scores_cleanliness  1.998e-01  7.881e-03  25.357  &lt; 2e-16 ***
-review_scores_location    -1.143e-01  9.210e-03 -12.410  &lt; 2e-16 ***
-review_scores_value       -1.728e-01  1.026e-02 -16.847  &lt; 2e-16 ***
-room_typePrivate room      5.996e-03  1.481e-02   0.405  0.68558    
-room_typeShared room      -1.282e-01  4.257e-02  -3.010  0.00261 ** 
-instant_bookableTRUE       4.196e-01  1.731e-02  24.238  &lt; 2e-16 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for Negative Binomial(0.738) family taken to be 1)
-
-    Null deviance: 37299  on 30159  degrees of freedom
-Residual deviance: 34295  on 30149  degrees of freedom
-AIC: 240149
-
-Number of Fisher Scoring iterations: 1
-
-              Theta:  0.73797 
-          Std. Err.:  0.00554 
-
- 2 x log-likelihood:  -240124.57300 </code></pre>
-</div>
-</div>
+</section>
+<section id="interpretation" class="level4">
+<h4 class="anchored" data-anchor-id="interpretation"><strong>Interpretation</strong></h4>
+<p>The output shown is from a Poisson regression model predicting the number of reviews (used as a proxy for bookings) based on a set of predictor variables. Below is an interpretation of the key model coefficients in this context:</p>
+<p><strong>Positive Predictors (increase to variables that increase review count)</strong></p>
+<ul>
+<li><p><strong>“instant_bookableTRUE”</strong> - listings that are instantly bookable receive ~41% more reviews than those that are not.</p></li>
+<li><p><strong>“review_scores_cleanliness”</strong> - 1-point increase in cleanliness rating is associated with a ~12% increase in expected reviews.</p></li>
+<li><p><strong>“bedrooms”</strong> - Each additional bedroom leads to a ~8% increase in expected review count.</p></li>
+</ul>
+<p><strong>Negative Predictors (increase to variables that decrease review count)</strong></p>
+<ul>
+<li><p><strong>“bathrooms”</strong> - each additional bathroom is associated with an 11% decrease in expected reviews.</p></li>
+<li><p><strong>“price”</strong> - a $1 increase in price is associated with a very small (&lt;0.002%) decrease in review count. This effect is marginal but significant.</p></li>
+<li><p><strong>“room_typePrivate room”</strong> - private rooms receive slightly fewer reviews (about 1%) than entire units.</p></li>
+</ul>
 
 
+</section>
 </section>
 </section>
 

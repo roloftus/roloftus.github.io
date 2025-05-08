@@ -1,7 +1,7 @@
 ---
 title: "Poisson Regression Examples"
 author: "Rob Loftus"
-date: today
+date: May 7, 2025
 callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
 ---
 
@@ -416,38 +416,112 @@ print(room_type_summary)
 print(instant_bookable_summary)
 ```
 
+#### **Distribution of Variables**
+First, we reviewed the distribution of values for each of the different variables. Number of Reviews and Price were difficult to analyze because they were clumped together and spread wide, so we also evaluated these variables in log form, which helped normalize the data.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+dfa_clean <- dfa %>%
+  mutate(
+    log_price = log1p(price),
+    log_reviews = log1p(number_of_reviews)
+  )
+
+vars_to_plot <- dfa_clean %>%
+  select(number_of_reviews, price, log_reviews, log_price, 
+         bathrooms, bedrooms, days)
+
+df_long <- vars_to_plot %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value")
+
+ggplot(df_long, aes(x = Value)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 50) +
+  facet_wrap(~ Variable, scales = "free", ncol = 2) +
+  theme_minimal(base_size = 14) +
+  theme(
+    strip.text = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 8),
+    axis.title = element_text(size = 10),
+    panel.spacing = unit(.25, "lines")
+  ) +
+  labs(x = NULL,
+       y = "Frequency")
+```
+
+To get a closer look at the distriubtion of "Number of Reviews," we created a more blown up version to get a better feel for the data.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
 hist(dfa_clean$number_of_reviews, breaks=50, main="Distribution of Number of Reviews",
      xlab="Number of Reviews", col="steelblue")
-boxplot(number_of_reviews ~ room_type, data=dfa_clean,
-        main="Number of Reviews by Room Type", ylab="Number of Reviews")
+```
+
+In addition to getting a view of the distribution of values, we also wanted to get an idea of the connection between different variables. Here you will find a scatterplot matrix that examines bathrooms, bedrooms, log_price, and log_reviews.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+dfa_clean$log_price <- log1p(dfa_clean$price)  # log(1 + price)
+dfa_clean$log_reviews <- log1p(dfa_clean$number_of_reviews)  # log(1 + reviews)
+
+vars_to_plot <- dfa_clean[, c("bathrooms", "bedrooms", "log_price", "log_reviews")]
+pairs(vars_to_plot,
+      main = "Scatterplot Matrix (with Log Price & Log Reviews)",
+      pch = 19,
+      col = rgb(0, 0, 1, alpha = 0.3))
+```
+
+The scatterplot in the matrix between log_price and log_reviews was not super clear, so we created a blown up version of this to make it easier to digest. It turned out that the data was much more insightful when just using the log for price and not for number of reviews. Here is this clearer view:
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 plot(log(dfa_clean$price), dfa_clean$number_of_reviews,
      main="Number of Reviews vs Log Price", xlab="Log(Price)", ylab="Number of Reviews",
-     col="darkorange", pch=20)
+     col="steelblue", pch=20)
 ```
+
+Additionally, we wanted to get a view into the correlation of the non-numerical reviews. Here you will see a chart that shows the relation between "Number of Reviews" and "Room Type."
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+boxplot(number_of_reviews ~ room_type, data=dfa_clean,
+        main="Number of Reviews by Room Type", ylab="Number of Reviews")
+```
+
+
+#### **Regression Results**
 
 ```{r, message=FALSE, warning=FALSE}
 model_poisson <- glm(number_of_reviews ~ days + bathrooms + bedrooms + price +
                      review_scores_cleanliness + review_scores_location +
                      review_scores_value + room_type + instant_bookable,
                      family = poisson(link = "log"), data = dfa_clean)
-summary(model_poisson)
+summary(model_poisson)$coefficients
 ```
+
+#### **Coefficients**
 
 ```{r, message=FALSE, warning=FALSE}
 exp(coef(model_poisson))
 ```
 
-```{r, message=FALSE, warning=FALSE}
-dispersion <- sum(residuals(model_poisson, type = "pearson")^2) / model_poisson$df.residual
-print(dispersion)
-if (dispersion > 1.5) {
-  library(MASS)
-  model_nb <- glm.nb(number_of_reviews ~ days + bathrooms + bedrooms + price +
-                     review_scores_cleanliness + review_scores_location +
-                     review_scores_value + room_type + instant_bookable,
-                     data = dfa_clean)
-  summary(model_nb)
-}
-```
+#### **Interpretation**
+
+The output shown is from a Poisson regression model predicting the number of reviews (used as a proxy for bookings) based on a set of predictor variables. Below is an interpretation of the key model coefficients in this context:
+
+**Positive Predictors (increase to variables that increase review count)**
+
+- **"instant_bookableTRUE"** - listings that are instantly bookable receive ~41% more reviews than those that are not.
+
+- **"review_scores_cleanliness"** - 1-point increase in cleanliness rating is associated with a ~12% increase in expected reviews.
+
+- **"bedrooms"** - Each additional bedroom leads to a ~8% increase in expected review count.
+
+
+**Negative Predictors (increase to variables that decrease review count)**
+
+- **"bathrooms"** - each additional bathroom is associated with an 11% decrease in expected reviews.
+
+- **"price"** - a $1 increase in price is associated with a very small (<0.002%) decrease in review count. This effect is marginal but significant.
+
+- **"room_typePrivate room"** - private rooms receive slightly fewer reviews (about 1%) than entire units.
+
+
