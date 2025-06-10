@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.43">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Rob Loftus">
+<meta name="dcterms.date" content="2025-06-09">
+
+<title>K-Means &amp; Key Drivers Analysis – Rob’s Website</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-6bd9cfa162949bde0a231f530c97869d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Rob’s Website</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../resume.html"> 
+<span class="menu-text">Resume</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#a.-k-means" id="toc-a.-k-means" class="nav-link active" data-scroll-target="#a.-k-means">1a. K-Means</a>
+  <ul class="collapse">
+  <li><a href="#elbow-method" id="toc-elbow-method" class="nav-link" data-scroll-target="#elbow-method">Elbow Method</a></li>
+  <li><a href="#silhouette-score" id="toc-silhouette-score" class="nav-link" data-scroll-target="#silhouette-score">Silhouette Score</a></li>
+  <li><a href="#custom-vs.-built-in-k-means" id="toc-custom-vs.-built-in-k-means" class="nav-link" data-scroll-target="#custom-vs.-built-in-k-means">Custom vs.&nbsp;Built-in K-Means</a></li>
+  <li><a href="#animated-clustering-visualization" id="toc-animated-clustering-visualization" class="nav-link" data-scroll-target="#animated-clustering-visualization">Animated Clustering Visualization</a></li>
+  <li><a href="#conlusion" id="toc-conlusion" class="nav-link" data-scroll-target="#conlusion">Conlusion</a></li>
+  </ul></li>
+  <li><a href="#b.-key-drivers-analysis" id="toc-b.-key-drivers-analysis" class="nav-link" data-scroll-target="#b.-key-drivers-analysis">2b. Key Drivers Analysis</a>
+  <ul class="collapse">
+  <li><a href="#metric-methods" id="toc-metric-methods" class="nav-link" data-scroll-target="#metric-methods"><strong>Metric Methods</strong></a></li>
+  <li><a href="#key-variables" id="toc-key-variables" class="nav-link" data-scroll-target="#key-variables"><strong>Key Variables</strong></a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><strong>Conclusion</strong></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">K-Means &amp; Key Drivers Analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Rob Loftus </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 9, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="a.-k-means" class="level2">
+<h2 class="anchored" data-anchor-id="a.-k-means">1a. K-Means</h2>
+<section id="elbow-method" class="level3">
+<h3 class="anchored" data-anchor-id="elbow-method">Elbow Method</h3>
+<p>The Elbow Plot shows how the total within-cluster sum of squares (WCSS) changes as we increase the number of clusters (K). A lower WCSS means that the points within each cluster are closer to the center. As we increase K, WCSS continues to drop, but the improvement slows down. In this case, the ‘elbow’ appears at K = 3, suggesting that using 3 clusters balances simplicity and accuracy well.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw4_questions_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="silhouette-score" class="level3">
+<h3 class="anchored" data-anchor-id="silhouette-score">Silhouette Score</h3>
+<p>The Silhouette Score tells us how well-separated the clusters are. Higher scores (closer to 1) mean better-defined clusters. Our silhouette plot shows a peak at K = 3, indicating that this number of clusters gives the clearest groupings. Scores above 0.5 suggest that the clustering is meaningful.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw4_questions_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="custom-vs.-built-in-k-means" class="level3">
+<h3 class="anchored" data-anchor-id="custom-vs.-built-in-k-means">Custom vs.&nbsp;Built-in K-Means</h3>
+<p>We wrote our own implementation of the K-means algorithm and compared it with R’s built-in kmeans() function. The two methods produced nearly identical results. Visually, the groupings of data points were consistent between both methods. This confirms our implementation works correctly. Here is are the three clusters plotted.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw4_questions_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="animated-clustering-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="animated-clustering-visualization">Animated Clustering Visualization</h3>
+<p>Below, is an animated version of the plot to show how the custom algorithm works step-by-step. The animation illustrates how centroids move and how points change cluster assignments until the groups stabilize. This helps demystify how K-means “learns” over time.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="kmeans_iterations.gif" class="img-fluid figure-img"></p>
+<figcaption>K-means Iterations</figcaption>
+</figure>
+</div>
+</section>
+<section id="conlusion" class="level3">
+<h3 class="anchored" data-anchor-id="conlusion">Conlusion</h3>
+<p>Both the Elbow and Silhouette methods agree that K = 3 is the best number of clusters. Our custom implementation works as expected, and the animation gives a clear visual of how the algorithm iteratively finds clusters.</p>
+</section>
+</section>
+<section id="b.-key-drivers-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="b.-key-drivers-analysis">2b. Key Drivers Analysis</h2>
+<p>We analyzed what drives satisfaction using various statistical techniques. The table below shows different importance measures for each variable, all scaled to percentages that sum to 100% within each column.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="vqttzpftvo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#vqttzpftvo table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#vqttzpftvo thead, #vqttzpftvo tbody, #vqttzpftvo tfoot, #vqttzpftvo tr, #vqttzpftvo td, #vqttzpftvo th {
+  border-style: none;
+}
+
+#vqttzpftvo p {
+  margin: 0;
+  padding: 0;
+}
+
+#vqttzpftvo .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#vqttzpftvo .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#vqttzpftvo .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#vqttzpftvo .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#vqttzpftvo .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#vqttzpftvo .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#vqttzpftvo .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#vqttzpftvo .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#vqttzpftvo .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#vqttzpftvo .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#vqttzpftvo .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#vqttzpftvo .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#vqttzpftvo .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#vqttzpftvo .gt_row {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#vqttzpftvo .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vqttzpftvo .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#vqttzpftvo .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#vqttzpftvo .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#vqttzpftvo .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vqttzpftvo .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#vqttzpftvo .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vqttzpftvo .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#vqttzpftvo .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vqttzpftvo .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vqttzpftvo .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vqttzpftvo .gt_left {
+  text-align: left;
+}
+
+#vqttzpftvo .gt_center {
+  text-align: center;
+}
+
+#vqttzpftvo .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#vqttzpftvo .gt_font_normal {
+  font-weight: normal;
+}
+
+#vqttzpftvo .gt_font_bold {
+  font-weight: bold;
+}
+
+#vqttzpftvo .gt_font_italic {
+  font-style: italic;
+}
+
+#vqttzpftvo .gt_super {
+  font-size: 65%;
+}
+
+#vqttzpftvo .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#vqttzpftvo .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#vqttzpftvo .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#vqttzpftvo .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#vqttzpftvo .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#vqttzpftvo .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#vqttzpftvo .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#vqttzpftvo .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#vqttzpftvo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="7" class="gt_heading gt_title gt_font_normal"><strong>Key Driver Metrics Summary</strong></th>
+</tr>
+<tr class="gt_heading even">
+<th colspan="7" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Feature Percentages</th>
+</tr>
+<tr class="gt_col_headings header">
+<th id="Variable" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray; font-weight: bold" scope="col">Variable</th>
+<th id="Pearson" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray; font-weight: bold" scope="col">Pearson</th>
+<th id="Std_Reg_Coef" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray; font-weight: bold" scope="col">Std_Reg_Coef</th>
+<th id="Usefulness" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray; font-weight: bold" scope="col">Usefulness</th>
+<th id="Shapley" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray; font-weight: bold" scope="col">Shapley</th>
+<th id="Johnson_RW" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray; font-weight: bold" scope="col">Johnson_RW</th>
+<th id="Gini" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray; font-weight: bold" scope="col">Gini</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">trust</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #64B87D; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">13.3%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #75C18A; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">25.3%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #90D0A0; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">31.5%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #76C28B; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">19.8%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #7AC48E; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">19.8%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #64B87D; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">18.7%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">build</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #DDEDE2; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">10.0%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #E6F2EA; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">4.4%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #EDF5F1; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">1.0%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #E9F3ED; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">6.6%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #EAF3ED; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">6.6%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #EBF4EF; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">7.6%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">differs</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #E4F0E8; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">9.6%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #E2EFE6; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">6.1%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #ECF4EF; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">2.1%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #E8F3EC; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">6.7%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #E8F3EC; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">7.0%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #EEF5F1; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">7.2%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">easy</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #BDE2C8; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">11.1%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #E5F1E9; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">4.8%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #EDF5F0; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">1.1%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #E1EFE5; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">8.5%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #E3F0E7; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">8.2%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #E3F0E7; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">9.0%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">appealing</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #C6E5CF; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">10.8%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #DEEEE3; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">7.4%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #EBF4EE; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">2.7%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #E1EFE5; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">8.4%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #E2F0E7; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">8.3%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #DFEEE4; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">9.6%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">rewarding</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #DAECE0; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">10.1%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #EFF6F2; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">1.1%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #EFF6F2; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">0.1%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #EAF4EE; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">6.3%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #ECF5F0; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">6.0%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #EBF4EE; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">7.7%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">popular</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #EFF6F2; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">8.9%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #E8F3EC; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">3.6%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #EEF5F1; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">0.8%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #EFF6F2; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">5.2%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #EFF6F2; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">5.4%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #EFF6F2; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">7.0%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">service</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #6FBE86; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">13.0%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #9BD5AA; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">19.3%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #C8E6D1; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">17.9%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #94D2A4; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">16.9%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #9CD5AB; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">16.6%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #86CB98; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">16.3%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Variable" style="border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">impact</td>
+<td class="gt_row gt_center" headers="Pearson" style="background-color: #68BA80; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">13.2%</td>
+<td class="gt_row gt_center" headers="Std_Reg_Coef" style="background-color: #64B87D; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">28.0%</td>
+<td class="gt_row gt_center" headers="Usefulness" style="background-color: #64B87D; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">42.8%</td>
+<td class="gt_row gt_center" headers="Shapley" style="background-color: #64B87D; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">21.6%</td>
+<td class="gt_row gt_center" headers="Johnson_RW" style="background-color: #64B87D; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">22.0%</td>
+<td class="gt_row gt_center" headers="Gini" style="background-color: #7BC58F; color: #000000; border-left-width: 1px; border-left-style: solid; border-left-color: gray; border-right-width: 1px; border-right-style: solid; border-right-color: gray; border-top-width: 1px; border-top-style: solid; border-top-color: gray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: gray">17.1%</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="metric-methods" class="level3">
+<h3 class="anchored" data-anchor-id="metric-methods"><strong>Metric Methods</strong></h3>
+<ul>
+<li><p><strong>Pearson:</strong> Measures how strongly each variable is related to satisfaction.</p></li>
+<li><p><strong>Std_Reg_Coef:</strong> The impact each variable has on satisfaction in a regression model.</p></li>
+<li><p><strong>Usefulness:</strong> How much predictive power is lost when a variable is removed.</p></li>
+<li><p><strong>Shapley:</strong> Fairly distributes predictive credit among variables, accounting for overlap.</p></li>
+<li><p><strong>Johnson_RW:</strong> A more accurate version of regression weights that considers correlation.</p></li>
+<li><p><strong>Gini:</strong> Comes from a random forest model; shows how much each variable helps in splitting the data.</p></li>
+</ul>
+</section>
+<section id="key-variables" class="level3">
+<h3 class="anchored" data-anchor-id="key-variables"><strong>Key Variables</strong></h3>
+<ul>
+<li><p>Impact and Trust consistently show up as top drivers across all methods.</p></li>
+<li><p>Service is also highly important, especially in the Shapley and Johnson methods.</p></li>
+<li><p>Variables like Rewarding and Popular are less influential, appearing with lower percentages.</p></li>
+</ul>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion"><strong>Conclusion</strong></h3>
+<p>There is broad agreement across metrics about which variables matter most. This helps build confidence in focusing improvement efforts on a few key areas like Impact, Trust, and Service.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
